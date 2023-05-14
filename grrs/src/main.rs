@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use clap::Parser;
 use std::fs;
 
@@ -7,13 +8,15 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args = Cli::parse();
-    let content = fs::read_to_string(&args.path).expect("Could not read file!");
+    let content = fs::read_to_string(&args.path)
+        .with_context(|| format!("could not read file `{}`", &args.path.display()))?;
 
     for line in content.lines() {
         if line.contains(&args.pattern) {
             println!("{}", line);
         }
     }
+    Ok(())
 }
