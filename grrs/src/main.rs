@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
-use std::fs;
+use grrs::find_matches;
+use std::{fs, io::stdout};
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -13,10 +14,15 @@ fn main() -> Result<()> {
     let content = fs::read_to_string(&args.path)
         .with_context(|| format!("could not read file `{}`", &args.path.display()))?;
 
-    for line in content.lines() {
-        if line.contains(&args.pattern) {
-            println!("{}", line);
-        }
-    }
+    find_matches(&content, &args.pattern, &mut stdout())?;
+
+    Ok(())
+}
+
+#[test]
+fn find_a_match() -> Result<()> {
+    let mut result = Vec::new();
+    find_matches("lorem ipsum\ndolor sit amet", "lorem", &mut result)?;
+    assert_eq!(result, b"lorem ipsum\n");
     Ok(())
 }
